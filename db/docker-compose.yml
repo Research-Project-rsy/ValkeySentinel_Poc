@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Valkey Primary Instance
+  valkey-primary:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey-primary-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - valkey-network
+    restart: unless-stopped
+
+  # Valkey Replica 1
+  valkey-replica-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-1
+    command: valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary 6379
+    ports:
+      - "6380:6379"
+    volumes:
+      - valkey-replica-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - valkey-network
+    depends_on:
+      - valkey-primary
+    restart: unless-stopped
+
+  # Valkey Replica 2
+  valkey-replica-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-2
+    command: valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary 6379
+    ports:
+      - "6381:6379"
+    volumes:
+      - valkey-replica-2-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - valkey-network
+    depends_on:
+      - valkey-primary
+    restart: unless-stopped
+
+volumes:
+  valkey-primary-data:
+  valkey-replica-1-data:
+  valkey-replica-2-data:
+
+networks:
+  valkey-network:
+    driver: bridge

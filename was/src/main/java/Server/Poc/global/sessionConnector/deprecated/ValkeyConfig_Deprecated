@@ -1,0 +1,47 @@
+  // ======================= Read (Round Robin) ver 2.0 =========================
+//
+//    @Bean(name = "sessionRead1Template")
+//    public RedisTemplate<String, String> sessionRead1Template(@Qualifier("sessionRead1ConnectionFactory") RedisConnectionFactory factory) {
+//        return buildTemplate(factory);
+//    }
+//
+//    @Bean(name = "sessionRead2Template")
+//    public RedisTemplate<String, String> sessionRead2Template(@Qualifier("sessionRead2ConnectionFactory") RedisConnectionFactory factory) {
+//        return buildTemplate(factory);
+//    }
+//
+//    @Bean(name = "sessionRead1ConnectionFactory")
+//    public LettuceConnectionFactory sessionRead1ConnectionFactory() {
+//        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(sessionRead1Host, sessionRead1Port));
+//    }
+//
+//    @Bean(name = "sessionRead2ConnectionFactory")
+//    public LettuceConnectionFactory sessionRead2ConnectionFactory() {
+//        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(sessionRead2Host, sessionRead2Port));
+//    }
+
+    // ======================= Read (Round Robin) ver 1.0 =========================
+//    private final AtomicInteger rrCounter = new AtomicInteger(0);
+//
+//    @Bean(name = "sessionReadTemplate")
+//    public RedisTemplate<String, String> sessionReadTemplate() {
+//        return buildTemplate(nextReplicaConnectionFactory());
+//    }
+//
+//    private RedisConnectionFactory nextReplicaConnectionFactory() {
+//        int index = rrCounter.getAndUpdate(i -> (i + 1) % 2);
+//
+//        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+//        if (index == 0) {
+//            config.setHostName(sessionRead1Host);
+//            config.setPort(sessionRead1Port);
+//        } else {
+//            config.setHostName(sessionRead2Host);
+//            config.setPort(sessionRead2Port);
+//        }
+//
+//        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+//        factory.afterPropertiesSet();
+//
+//        return factory;
+//    }

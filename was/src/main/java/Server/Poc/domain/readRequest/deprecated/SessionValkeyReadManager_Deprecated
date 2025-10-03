@@ -1,0 +1,44 @@
+   // ======================= Read (Round Robin) ver 1.0  =========================
+
+//    /* 라운드 로빈 카운터 */
+//    private final AtomicInteger rrCounter = new AtomicInteger(0);
+//
+//    @Value("${session.read1.host}") private String host1; // Read1 인스턴스 Host
+//    @Value("${session.read1.port}") private int port1; // Read1 인스턴스 Port
+//
+//    @Value("${session.read2.host}") private String host2; // Read2 인스턴스 Host
+//    @Value("${session.read2.port}") private int port2; // Read2 인스턴스 Port
+//
+//    /* 세션 서버에서 값 조회 */
+//    // Connection Pool 사용 안함 - 매 연결 시, 팩토리/템플릿 생성 삭제
+//    public String getValue(String key) {
+//
+//        RedisTemplate<String, String> template = nextTemplate(); // 레플리카 DB 선택
+//        ValueOperations<String, String> ops = template.opsForValue(); // 값 선택
+//        return ops.get(key);
+//    }
+//
+//    // 두개의 Replica에 대해 라운드 로빈 정책 적용하여 트래픽 분산
+//    private RedisTemplate<String, String> nextTemplate() {
+//        int index = rrCounter.getAndUpdate(i -> (i + 1) % 2);
+//
+//        // 선택된 인덱스에 따라, 연결 변경
+//        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+//        if (index == 0) {
+//            config.setHostName(host1);
+//            config.setPort(port1);
+//        } else {
+//            config.setHostName(host2);
+//            config.setPort(port2);
+//        }
+//
+//        // 선택된 세션 서버 용 커넥션 펙토리 생성
+//        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+//        factory.afterPropertiesSet();
+//
+//        // 템플릿 생성 후 커넥션 펙토리 연결
+//        RedisTemplate<String, String> template = new RedisTemplate<>();
+//        template.setConnectionFactory(factory);
+//        template.afterPropertiesSet();
+//        return template;
+//    }
