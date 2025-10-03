@@ -15,18 +15,20 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 public class ValkeyConfig {
 
-    @Value("${session.write.host}") private String sessionWriteHost; // Write 인스턴스 Host
-    @Value("${session.write.port}") private int sessionWritePort; // Write 인스턴스 Port
+    @Value("${session.write.host}")
+    private String sessionWriteHost; // Write 인스턴스 Host
+    @Value("${session.write.port}")
+    private int sessionWritePort; // Write 인스턴스 Port
 
-    @Value("${session.read1.host}") private String sessionRead1Host; // Read1 인스턴스 Host
-    @Value("${session.read1.port}") private int sessionRead1Port; // Read1 인스턴스 Port
-
-    @Value("${session.read2.host}") private String sessionRead2Host; // Read2 인스턴스 Host
-    @Value("${session.read2.port}") private int sessionRead2Port; // Read2 인스턴스 Port
+    @Value("${session.read.nodes}")
+    private String readNodes; // "host:port,host:port,..."
 
     // ======================= Write =========================
     @Bean(name = "sessionWriteTemplate")
@@ -36,7 +38,7 @@ public class ValkeyConfig {
     }
 
     @Bean(name = "sessionPrimaryConnectionFactory")
-    @Primary //  Primary 지정, auto-config 기본 Bean으로 사용됨
+    @Primary // Primary 지정, auto-config 기본 Bean으로 사용됨
     public RedisConnectionFactory sessionPrimaryConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName(sessionWriteHost);
@@ -44,28 +46,20 @@ public class ValkeyConfig {
         return new LettuceConnectionFactory(config);
     }
 
-    // ======================= Read (Round Robin) with Pool Ver3.0 =========================
-    @Bean(name = "sessionRead1Template")
-    public RedisTemplate<String, String> sessionRead1Template(@Qualifier("sessionRead1ConnectionFactory") RedisConnectionFactory factory) {
-        return buildTemplate(factory);
+    // ======================= Read (Round Robin) with Pool Ver3.0
+    // =========================
+    @Bean(name = "sessionReadTemplates")
+    public List<RedisTemplate<String, String>> sessionReadTemplates() {
+        List<RedisTemplate<String, String>> templates = new ArrayList<>();
+        for (HostPort hp : parseNodes(readNodes)) {
+            LettuceConnectionFactory cf = createPooledFactory(hp.host, hp.port);
+            templates.add(buildTemplate(cf));
+        }
+        return templates;
     }
 
-    @Bean(name = "sessionRead2Template")
-    public RedisTemplate<String, String> sessionRead2Template(@Qualifier("sessionRead2ConnectionFactory") RedisConnectionFactory factory) {
-        return buildTemplate(factory);
-    }
-
-    @Bean(name = "sessionRead1ConnectionFactory")
-    public LettuceConnectionFactory sessionRead1ConnectionFactory() {
-        return createPooledFactory(sessionRead1Host, sessionRead1Port);
-    }
-
-    @Bean(name = "sessionRead2ConnectionFactory")
-    public LettuceConnectionFactory sessionRead2ConnectionFactory() {
-        return createPooledFactory(sessionRead2Host, sessionRead2Port);
-    }
-
-    // ======================= Helper for pooled Read factories =========================
+    // ======================= Helper for pooled Read factories
+    // =========================
     // Helper method inside the same configuration class
     private LettuceConnectionFactory createPooledFactory(String host, int port) {
         RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(host, port);
@@ -97,5 +91,26 @@ public class ValkeyConfig {
         return template;
     }
 
+    private List<HostPort> parseNodes(String nodesCsv) {
+        return List.of(nodesCsv.split(","))
+                .stream()
+                .map(s -> s.trim())
+                .filter(s -> !s.isEmpty())
+                .map(s -> {
+                    String[] hp = s.split(":");
+                    return new HostPort(hp[0], Integer.parseInt(hp[1]));
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static class HostPort {
+        final String host;
+        final int port;
+
+        HostPort(String host, int port) {
+            this.host = host;
+            this.port = port;
+        }
+    }
 
 }

@@ -1,0 +1,63 @@
+version: '3.8'
+
+networks:
+  app-net:
+    external: true
+
+services:
+  nginx:
+    build:
+      context: .
+    container_name: poc-nginx
+    ports:
+      - "80:80"
+    networks:
+      - app-net
+    depends_on:
+      - was-1
+      - was-2
+      - was-3
+      - was-4
+      - was-5
+
+  was-1:
+    image: poc-was:latest
+    container_name: poc-was-1
+    networks:
+      - app-net
+    expose:
+      - "8080"
+
+  was-2:
+    image: poc-was:latest
+    container_name: poc-was-2
+    networks:
+      - app-net
+    expose:
+      - "8080"
+
+  was-3:
+    image: poc-was:latest
+    container_name: poc-was-3
+    networks:
+      - app-net
+    expose:
+      - "8080"
+
+  was-4:
+    image: poc-was:latest
+    container_name: poc-was-4
+    networks:
+      - app-net
+    expose:
+      - "8080"
+
+  was-5:
+    image: poc-was:latest
+    container_name: poc-was-5
+    networks:
+      - app-net
+    expose:
+      - "8080"
+
+

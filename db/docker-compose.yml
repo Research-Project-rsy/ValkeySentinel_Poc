@@ -1,57 +1,203 @@
-version: '3.8'
 
-services:
-  # Valkey Primary Instance
-  valkey-primary:
-    image: valkey/valkey:7.2.5-alpine
-    container_name: poc-valkey-primary
-    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
-    ports:
-      - "6379:6379"
-    volumes:
-      - valkey-primary-data:/data
-      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
-    networks:
-      - valkey-network
-    restart: unless-stopped
-
-  # Valkey Replica 1
-  valkey-replica-1:
-    image: valkey/valkey:7.2.5-alpine
-    container_name: poc-valkey-replica-1
-    command: valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary 6379
-    ports:
-      - "6380:6379"
-    volumes:
-      - valkey-replica-1-data:/data
-      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
-    networks:
-      - valkey-network
-    depends_on:
-      - valkey-primary
-    restart: unless-stopped
-
-  # Valkey Replica 2
-  valkey-replica-2:
-    image: valkey/valkey:7.2.5-alpine
-    container_name: poc-valkey-replica-2
-    command: valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary 6379
-    ports:
-      - "6381:6379"
-    volumes:
-      - valkey-replica-2-data:/data
-      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
-    networks:
-      - valkey-network
-    depends_on:
-      - valkey-primary
-    restart: unless-stopped
-
-volumes:
-  valkey-primary-data:
-  valkey-replica-1-data:
-  valkey-replica-2-data:
 
 networks:
-  valkey-network:
-    driver: bridge
+  app-net:
+    external: true
+
+volumes:
+  valkey-primary-1-data:
+  valkey-primary-2-data:
+  valkey-primary-3-data:
+  valkey-primary-4-data:
+  valkey-primary-5-data:
+  valkey-replica-1-1-data:
+  valkey-replica-1-2-data:
+  valkey-replica-2-1-data:
+  valkey-replica-2-2-data:
+  valkey-replica-3-1-data:
+  valkey-replica-3-2-data:
+  valkey-replica-4-1-data:
+  valkey-replica-4-2-data:
+  valkey-replica-5-1-data:
+  valkey-replica-5-2-data:
+
+services:
+  valkey-primary-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary-1
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    volumes:
+      - valkey-primary-1-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-primary-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary-2
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    volumes:
+      - valkey-primary-2-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-primary-3:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary-3
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    volumes:
+      - valkey-primary-3-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-primary-4:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary-4
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    volumes:
+      - valkey-primary-4-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-primary-5:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-primary-5
+    command: valkey-server --port 6379 --replica-read-only no --appendonly yes --appendfsync everysec
+    volumes:
+      - valkey-primary-5-data:/data
+      - ./config/valkey-primary.conf:/usr/local/etc/valkey/valkey.conf
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-1-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-1-1
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-1 6379"
+    volumes:
+      - valkey-replica-1-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    depends_on:
+      - valkey-primary-1
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-1-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-1-2
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-1 6379"
+    volumes:
+      - valkey-replica-1-2-data:/data
+    depends_on:
+      - valkey-primary-1
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-2-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-2-1
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-2 6379"
+    volumes:
+      - valkey-replica-2-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    depends_on:
+      - valkey-primary-2
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-2-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-2-2
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-2 6379"
+    volumes:
+      - valkey-replica-2-2-data:/data
+    depends_on:
+      - valkey-primary-2
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-3-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-3-1
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-3 6379"
+    volumes:
+      - valkey-replica-3-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    depends_on:
+      - valkey-primary-3
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-3-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-3-2
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-3 6379"
+    volumes:
+      - valkey-replica-3-2-data:/data
+    depends_on:
+      - valkey-primary-3
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-4-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-4-1
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-4 6379"
+    volumes:
+      - valkey-replica-4-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    depends_on:
+      - valkey-primary-4
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-4-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-4-2
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-4 6379"
+    volumes:
+      - valkey-replica-4-2-data:/data
+    depends_on:
+      - valkey-primary-4
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-5-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-5-1
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-5 6379"
+    volumes:
+      - valkey-replica-5-1-data:/data
+      - ./config/valkey-replica.conf:/usr/local/etc/valkey/valkey.conf
+    depends_on:
+      - valkey-primary-5
+    networks:
+      - app-net
+    restart: unless-stopped
+
+  valkey-replica-5-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-valkey-replica-5-2
+    command: sh -c "valkey-server --port 6379 --replica-read-only yes --appendonly yes --appendfsync everysec --replicaof valkey-primary-5 6379"
+    volumes:
+      - valkey-replica-5-2-data:/data
+    depends_on:
+      - valkey-primary-5
+    networks:
+      - app-net
+    restart: unless-stopped

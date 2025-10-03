@@ -1,0 +1,54 @@
+
+networks:
+  app-net:
+    external: true
+
+services:
+  sentinel-1:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-sentinel-1
+    command: valkey-sentinel /usr/local/etc/valkey/sentinel.conf
+    volumes:
+      - ../db/config/sentinel.conf:/usr/local/etc/valkey/sentinel.conf
+    networks:
+      - app-net
+    ports:
+      - "26379:26379"
+
+  sentinel-2:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-sentinel-2
+    command: valkey-sentinel /usr/local/etc/valkey/sentinel.conf
+    volumes:
+      - ../db/config/sentinel.conf:/usr/local/etc/valkey/sentinel.conf
+    networks:
+      - app-net
+
+  sentinel-3:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-sentinel-3
+    command: valkey-sentinel /usr/local/etc/valkey/sentinel.conf
+    volumes:
+      - ../db/config/sentinel.conf:/usr/local/etc/valkey/sentinel.conf
+    networks:
+      - app-net
+
+  sentinel-4:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-sentinel-4
+    command: valkey-sentinel /usr/local/etc/valkey/sentinel.conf
+    volumes:
+      - ../db/config/sentinel.conf:/usr/local/etc/valkey/sentinel.conf
+    networks:
+      - app-net
+
+  sentinel-5:
+    image: valkey/valkey:7.2.5-alpine
+    container_name: poc-sentinel-5
+    command: valkey-sentinel /usr/local/etc/valkey/sentinel.conf
+    volumes:
+      - ../db/config/sentinel.conf:/usr/local/etc/valkey/sentinel.conf
+    networks:
+      - app-net
+
+
