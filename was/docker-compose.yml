@@ -1,9 +1,3 @@
-version: '3.8'
-
-networks:
-  app-net:
-    external: true
-
 services:
   was-1:
     build:
@@ -64,5 +58,9 @@ services:
       - app-net
     depends_on:
       - was-1
+
+networks:
+  app-net:
+    external: true
 
 
