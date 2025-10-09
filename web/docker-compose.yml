@@ -8,12 +8,6 @@ services:
       - "80:80"
     networks:
       - app-net
-    depends_on:
-      - was-1
-      - was-2
-      - was-3
-      - was-4
-      - was-5
 
 networks:
   app-net:

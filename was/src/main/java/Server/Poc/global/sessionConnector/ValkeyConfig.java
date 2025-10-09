@@ -2,11 +2,9 @@ package Server.Poc.global.sessionConnector;
 
 import io.lettuce.core.api.StatefulConnection;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -22,44 +20,45 @@ import java.util.stream.Collectors;
 @Configuration
 public class ValkeyConfig {
 
-    @Value("${session.write.host}")
-    private String sessionWriteHost; // Write 인스턴스 Host
-    @Value("${session.write.port}")
-    private int sessionWritePort; // Write 인스턴스 Port
+    @Value("${session.write.nodes}")
+    private String writeNodes; // Write 인스턴스
 
     @Value("${session.read.nodes}")
-    private String readNodes; // "host:port,host:port,..."
+    private String readNodes; // Read 인스턴스
 
-    // ======================= Write =========================
-    @Bean(name = "sessionWriteTemplate")
-    public RedisTemplate<String, String> sessionWriteTemplate(
-            @Qualifier("sessionPrimaryConnectionFactory") RedisConnectionFactory connectionFactory) {
-        return buildTemplate(connectionFactory);
-    }
+    // ======================= Write (Round Robin) without Pool Ver2.0 =========================
 
-    @Bean(name = "sessionPrimaryConnectionFactory")
-    @Primary // Primary 지정, auto-config 기본 Bean으로 사용됨
-    public RedisConnectionFactory sessionPrimaryConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(sessionWriteHost);
-        config.setPort(sessionWritePort);
-        return new LettuceConnectionFactory(config);
-    }
-
-    // ======================= Read (Round Robin) with Pool Ver3.0
-    // =========================
-    @Bean(name = "sessionReadTemplates")
-    public List<RedisTemplate<String, String>> sessionReadTemplates() {
+    @Bean(name = "sessionWriteTemplates")
+    public List<RedisTemplate<String, String>> sessionWriteTemplates() {
         List<RedisTemplate<String, String>> templates = new ArrayList<>();
-        for (HostPort hp : parseNodes(readNodes)) {
-            LettuceConnectionFactory cf = createPooledFactory(hp.host, hp.port);
+        for (HostPort hp : parseNodes(writeNodes)) { // Write 노드 파싱
+
+            /* 단순 Factory 생성 (Connection Pool) */
+            RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(hp.host, hp.port);
+            LettuceConnectionFactory cf = new LettuceConnectionFactory(config);
+            cf.afterPropertiesSet(); // 초기화
             templates.add(buildTemplate(cf));
         }
         return templates;
     }
 
-    // ======================= Helper for pooled Read factories
-    // =========================
+    // ======================= Read (Round Robin) with Pool Ver3.0 =========================
+
+    @Bean(name = "sessionReadTemplates")
+    public List<RedisTemplate<String, String>> sessionReadTemplates() {
+        List<RedisTemplate<String, String>> templates = new ArrayList<>();
+        for (HostPort hp : parseNodes(readNodes)) { // Read 노드 파싱
+
+            /* Connection Pool 적용 */
+            LettuceConnectionFactory cf = createPooledFactory(hp.host, hp.port);
+            cf.afterPropertiesSet();
+            templates.add(buildTemplate(cf));
+        }
+        return templates;
+    }
+
+    // ======================= Helper for pooled Read factories =========================
+
     // Helper method inside the same configuration class
     private LettuceConnectionFactory createPooledFactory(String host, int port) {
         RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(host, port);
@@ -91,18 +90,28 @@ public class ValkeyConfig {
         return template;
     }
 
+    /**
+     * 문자열을 Java 객체 리스트로 변환하는 파싱 유틸리티
+     * @param nodesCsv 대상 노드 문자열
+     * @return 포트 리스트 반환
+     */
     private List<HostPort> parseNodes(String nodesCsv) {
+
+        // 구분자를 기준으로 application.properties에서 값(대상 노드)을 반환
         return List.of(nodesCsv.split(","))
                 .stream()
-                .map(s -> s.trim())
-                .filter(s -> !s.isEmpty())
+                .map(s -> s.trim()) // 공백 제거
+                .filter(s -> !s.isEmpty()) // 빈 문자열 제거
                 .map(s -> {
-                    String[] hp = s.split(":");
+                    String[] hp = s.split(":"); // 각 "host:port" 문자열을 ":"로 분리.
                     return new HostPort(hp[0], Integer.parseInt(hp[1]));
                 })
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Redis 노드의 host, port 정보를 담는 단순 DTO
+     */
     private static class HostPort {
         final String host;
         final int port;
@@ -114,3 +123,4 @@ public class ValkeyConfig {
     }
 
 }
+
