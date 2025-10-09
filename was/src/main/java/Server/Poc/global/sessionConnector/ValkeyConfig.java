@@ -33,7 +33,7 @@ public class ValkeyConfig {
         List<RedisTemplate<String, String>> templates = new ArrayList<>();
         for (HostPort hp : parseNodes(writeNodes)) { // Write 노드 파싱
 
-            /* 단순 Factory 생성 (Connection Pool) */
+            /* 단순 Factory 생성 (Connection Pool X) */
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(hp.host, hp.port);
             LettuceConnectionFactory cf = new LettuceConnectionFactory(config);
             cf.afterPropertiesSet(); // 초기화

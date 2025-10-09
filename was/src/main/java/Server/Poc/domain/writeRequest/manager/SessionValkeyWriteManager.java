@@ -43,8 +43,3 @@ public class SessionValkeyWriteManager {
         return writeTemplates.get(index);
     }
 }
-// 세션 서버에 값 저장
-//    public void setValue(String key, String value, long ttlMinutes) {
-//        ValueOperations<String, String> ops = writeTemplates.opsForValue();
-//        ops.set(key, value, ttlMinutes, TimeUnit.MINUTES);
-//    }
